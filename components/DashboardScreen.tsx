@@ -25,9 +25,12 @@ type DashboardScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Da
 
 const DashboardScreen: React.FC = () => {
   const navigation = useNavigation<DashboardScreenNavigationProp>();
-  const [filmList, setFilmList] = useState<Film[]>(initialFilms);
+  const [filmList, setFilmList] = useState(initialFilms);
   const [modalVisible, setModalVisible] = useState(false);
   const [currentFilm, setCurrentFilm] = useState<Film | null>(null);
+  const [newFilmTitle, setNewFilmTitle] = useState('');
+  const [newFilmDirector, setNewFilmDirector] = useState('');
+  const [newFilmTime, setNewFilmTime] = useState('');
 
   const handleEdit = (film: Film) => {
     setCurrentFilm(film);
@@ -41,11 +44,27 @@ const DashboardScreen: React.FC = () => {
 
   const handleSave = () => {
     if (currentFilm) {
-      const newFilmList = filmList.map(film => (film.id === currentFilm.id ? currentFilm : film));
+      const newFilmList = filmList.map(film =>
+        film.id === currentFilm.id ? { ...currentFilm } : film
+      );
       setFilmList(newFilmList);
       setModalVisible(false);
       setCurrentFilm(null);
     }
+  };
+
+  const handleAddFilm = () => {
+    const newFilm: Film = {
+      id: String(filmList.length + 1),
+      title: newFilmTitle,
+      director: newFilmDirector,
+      time: newFilmTime,
+    };
+    setFilmList([...filmList, newFilm]);
+    setModalVisible(false);
+    setNewFilmTitle('');
+    setNewFilmDirector('');
+    setNewFilmTime('');
   };
 
   const renderItem = ({ item }: { item: Film }) => (
@@ -70,6 +89,9 @@ const DashboardScreen: React.FC = () => {
 
   return (
     <View style={styles.container}>
+      <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+        <MaterialCommunityIcons name="arrow-left" size={24} color="white" />
+      </TouchableOpacity>
       <Text style={styles.header}>DASHBOARD</Text>
       <Text style={styles.subHeader}>FILMS</Text>
       <FlatList
@@ -78,45 +100,60 @@ const DashboardScreen: React.FC = () => {
         keyExtractor={item => item.id}
         contentContainerStyle={styles.list}
       />
-      <TouchableOpacity style={styles.fab} onPress={() => navigation.navigate('Scenes')}>
+      <TouchableOpacity style={styles.fab} onPress={() => setModalVisible(true)}>
         <MaterialCommunityIcons name="plus" size={24} color="white" />
       </TouchableOpacity>
-      {currentFilm && (
-        <Modal
-          animationType="slide"
-          transparent={true}
-          visible={modalVisible}
-          onRequestClose={() => {
-            setModalVisible(false);
-            setCurrentFilm(null);
-          }}
-        >
-          <View style={styles.modalView}>
-            <Text style={styles.modalText}>Edit Film</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Title"
-              value={currentFilm.title}
-              onChangeText={(text) => setCurrentFilm({ ...currentFilm, title: text })}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Director"
-              value={currentFilm.director}
-              onChangeText={(text) => setCurrentFilm({ ...currentFilm, director: text })}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Time"
-              value={currentFilm.time}
-              onChangeText={(text) => setCurrentFilm({ ...currentFilm, time: text })}
-            />
-            <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-              <Text style={styles.saveButtonText}>Save</Text>
-            </TouchableOpacity>
-          </View>
-        </Modal>
-      )}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => {
+          setModalVisible(false);
+          setCurrentFilm(null);
+        }}>
+        <View style={styles.modalView}>
+          <Text style={styles.modalText}>
+            {currentFilm ? 'Edit Film' : 'Add New Film'}
+          </Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Title"
+            value={currentFilm ? currentFilm.title : newFilmTitle}
+            onChangeText={text =>
+              currentFilm
+                ? setCurrentFilm({ ...currentFilm, title: text })
+                : setNewFilmTitle(text)
+            }
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Director"
+            value={currentFilm ? currentFilm.director : newFilmDirector}
+            onChangeText={text =>
+              currentFilm
+                ? setCurrentFilm({ ...currentFilm, director: text })
+                : setNewFilmDirector(text)
+            }
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Time"
+            value={currentFilm ? currentFilm.time : newFilmTime}
+            onChangeText={text =>
+              currentFilm
+                ? setCurrentFilm({ ...currentFilm, time: text })
+                : setNewFilmTime(text)
+            }
+          />
+          <TouchableOpacity
+            style={styles.saveButton}
+            onPress={currentFilm ? handleSave : handleAddFilm}>
+            <Text style={styles.saveButtonText}>
+              {currentFilm ? 'Save' : 'Add Film'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -213,6 +250,12 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 16,
     textAlign: 'center',
+  },
+  backButton: {
+    position: 'absolute',
+    top: 70,
+    left: 100,
+    zIndex: 10,
   },
 });
 
