@@ -12,7 +12,6 @@ type Scene = {
   stock: string;
 };
 
-
 const initialScenes: Scene[] = [
   { id: '1', description: 'Scene 1', cost: 'Cost 1', stock: 'Stock 1' },
   { id: '2', description: 'Scene 2', cost: 'Cost 2', stock: 'Stock 2' },
@@ -23,18 +22,20 @@ type DashboardScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Da
 
 const DashboardScene: React.FC = () => {
   const navigation = useNavigation<DashboardScreenNavigationProp>();
-  const [scenes, setScenes] = useState(initialScenes);
+  const [scenes, setScenes] = useState<Scene[]>(initialScenes);
   const [modalVisible, setModalVisible] = useState(false);
   const [currentScene, setCurrentScene] = useState<Scene | null>(null);
   const [editedDescription, setEditedDescription] = useState('');
   const [editedCost, setEditedCost] = useState('');
   const [editedStock, setEditedStock] = useState('');
+  const [isEditing, setIsEditing] = useState(false);
 
   const handleEdit = (scene: Scene) => {
     setCurrentScene(scene);
     setEditedDescription(scene.description);
     setEditedCost(scene.cost);
     setEditedStock(scene.stock);
+    setIsEditing(true);
     setModalVisible(true);
   };
 
@@ -44,8 +45,8 @@ const DashboardScene: React.FC = () => {
   };
 
   const handleSave = () => {
-    if (currentScene) {
-      const updatedScene = {
+    if (isEditing && currentScene) {
+      const updatedScene: Scene = {
         ...currentScene,
         description: editedDescription,
         cost: editedCost,
@@ -55,12 +56,21 @@ const DashboardScene: React.FC = () => {
         scene.id === currentScene.id ? updatedScene : scene
       );
       setScenes(updatedScenes);
-      setModalVisible(false);
-      setCurrentScene(null);
-      setEditedDescription('');
-      setEditedCost('');
-      setEditedStock('');
+    } else {
+      const newScene: Scene = {
+        id: (scenes.length + 1).toString(),
+        description: editedDescription,
+        cost: editedCost,
+        stock: editedStock,
+      };
+      setScenes([...scenes, newScene]);
     }
+    setModalVisible(false);
+    setCurrentScene(null);
+    setEditedDescription('');
+    setEditedCost('');
+    setEditedStock('');
+    setIsEditing(false);
   };
 
   const renderItem = ({ item }: { item: Scene }) => (
@@ -84,7 +94,12 @@ const DashboardScene: React.FC = () => {
   );
 
   const handleAdd = () => {
-    // Implementar lógica para añadir una nueva escena
+    setCurrentScene(null);
+    setEditedDescription('');
+    setEditedCost('');
+    setEditedStock('');
+    setIsEditing(false);
+    setModalVisible(true);
   };
 
   return (
@@ -106,44 +121,40 @@ const DashboardScene: React.FC = () => {
         <MaterialIcons name="add" size={24} color="black" />
       </TouchableOpacity>
 
-      
-
-      {currentScene && (
-        <Modal
-          animationType="slide"
-          transparent={true}
-          visible={modalVisible}
-          onRequestClose={() => {
-            setModalVisible(false);
-            setCurrentScene(null);
-          }}
-        >
-          <View style={styles.modalView}>
-            <Text style={styles.modalText}>Editar Escena</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Descripción"
-              value={editedDescription}
-              onChangeText={text => setEditedDescription(text)}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Costo"
-              value={editedCost}
-              onChangeText={text => setEditedCost(text)}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Stock"
-              value={editedStock}
-              onChangeText={text => setEditedStock(text)}
-            />
-            <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-              <Text style={styles.saveButtonText}>Guardar</Text>
-            </TouchableOpacity>
-          </View>
-        </Modal>
-      )}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => {
+          setModalVisible(false);
+          setCurrentScene(null);
+        }}
+      >
+        <View style={styles.modalView}>
+          <Text style={styles.modalText}>{isEditing ? 'Editar Escena' : 'Agregar Escena'}</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Descripción"
+            value={editedDescription}
+            onChangeText={text => setEditedDescription(text)}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Costo"
+            value={editedCost}
+            onChangeText={text => setEditedCost(text)}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Stock"
+            value={editedStock}
+            onChangeText={text => setEditedStock(text)}
+          />
+          <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+            <Text style={styles.saveButtonText}>Guardar</Text>
+          </TouchableOpacity>
+        </View>
+      </Modal>
     </View>
   );
 };

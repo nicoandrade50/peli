@@ -14,22 +14,23 @@ type Character = {
 };
 
 const initialCharacters: Character[] = [
-  { id: '1', director: 'Director 1', description: 'Character 1', cost: 'Cost 1', stock: 'Stock 1' },
-  { id: '2', director: 'Director 2', description: 'Character 2', cost: 'Cost 2', stock: 'Stock 2' },
-  { id: '3', director: 'Director 3', description: 'Character 3', cost: 'Cost 3', stock: 'Stock 3' },
+  { id: '1', director: 'Director 1', description: 'Rocky Balboa', cost: 'Cost 1', stock: 'Stock 1' },
+  { id: '2', director: 'Director 2', description: 'Apollo Creed', cost: 'Cost 2', stock: 'Stock 2' },
+  { id: '3', director: 'Director 3', description: 'Talia Shire', cost: 'Cost 3', stock: 'Stock 3' },
 ];
 
 type DashboardScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Dashboard'>;
 
 const DashboardCharacter: React.FC = () => {
   const navigation = useNavigation<DashboardScreenNavigationProp>();
-  const [characters, setCharacters] = useState(initialCharacters);
+  const [characters, setCharacters] = useState<Character[]>(initialCharacters);
   const [modalVisible, setModalVisible] = useState(false);
   const [currentCharacter, setCurrentCharacter] = useState<Character | null>(null);
   const [editedDirector, setEditedDirector] = useState('');
   const [editedDescription, setEditedDescription] = useState('');
   const [editedCost, setEditedCost] = useState('');
   const [editedStock, setEditedStock] = useState('');
+  const [isEditing, setIsEditing] = useState(false);
 
   const handleEdit = (character: Character) => {
     setCurrentCharacter(character);
@@ -37,6 +38,7 @@ const DashboardCharacter: React.FC = () => {
     setEditedDescription(character.description);
     setEditedCost(character.cost);
     setEditedStock(character.stock);
+    setIsEditing(true);
     setModalVisible(true);
   };
 
@@ -46,8 +48,8 @@ const DashboardCharacter: React.FC = () => {
   };
 
   const handleSave = () => {
-    if (currentCharacter) {
-      const updatedCharacter = {
+    if (isEditing && currentCharacter) {
+      const updatedCharacter: Character = {
         ...currentCharacter,
         director: editedDirector,
         description: editedDescription,
@@ -58,13 +60,23 @@ const DashboardCharacter: React.FC = () => {
         character.id === currentCharacter.id ? updatedCharacter : character
       );
       setCharacters(updatedCharacters);
-      setModalVisible(false);
-      setCurrentCharacter(null);
-      setEditedDirector('');
-      setEditedDescription('');
-      setEditedCost('');
-      setEditedStock('');
+    } else {
+      const newCharacter: Character = {
+        id: (characters.length + 1).toString(),
+        director: editedDirector,
+        description: editedDescription,
+        cost: editedCost,
+        stock: editedStock,
+      };
+      setCharacters([...characters, newCharacter]);
     }
+    setModalVisible(false);
+    setCurrentCharacter(null);
+    setEditedDirector('');
+    setEditedDescription('');
+    setEditedCost('');
+    setEditedStock('');
+    setIsEditing(false);
   };
 
   const renderItem = ({ item }: { item: Character }) => (
@@ -89,7 +101,13 @@ const DashboardCharacter: React.FC = () => {
   );
 
   const handleAdd = () => {
-    // Implementar lógica para añadir un nuevo personaje
+    setCurrentCharacter(null);
+    setEditedDirector('');
+    setEditedDescription('');
+    setEditedCost('');
+    setEditedStock('');
+    setIsEditing(false);
+    setModalVisible(true);
   };
 
   return (
@@ -106,52 +124,50 @@ const DashboardCharacter: React.FC = () => {
         keyExtractor={item => item.id}
         contentContainerStyle={styles.list}
       />
-      <TouchableOpacity style={styles.fab}>
+      <TouchableOpacity style={styles.fab} onPress={handleAdd}>
         <MaterialIcons name="add" size={24} color="white" />
       </TouchableOpacity>
 
-      {currentCharacter && (
-        <Modal
-          animationType="slide"
-          transparent={true}
-          visible={modalVisible}
-          onRequestClose={() => {
-            setModalVisible(false);
-            setCurrentCharacter(null);
-          }}
-        >
-          <View style={styles.modalView}>
-            <Text style={styles.modalText}>Editar Personaje</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Director"
-              value={editedDirector}
-              onChangeText={text => setEditedDirector(text)}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Descripción"
-              value={editedDescription}
-              onChangeText={text => setEditedDescription(text)}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Costo"
-              value={editedCost}
-              onChangeText={text => setEditedCost(text)}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Stock"
-              value={editedStock}
-              onChangeText={text => setEditedStock(text)}
-            />
-            <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-              <Text style={styles.saveButtonText}>Guardar</Text>
-            </TouchableOpacity>
-          </View>
-        </Modal>
-      )}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => {
+          setModalVisible(false);
+          setCurrentCharacter(null);
+        }}
+      >
+        <View style={styles.modalView}>
+          <Text style={styles.modalText}>{isEditing ? 'Editar Personaje' : 'Agregar Personaje'}</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Director"
+            value={editedDirector}
+            onChangeText={text => setEditedDirector(text)}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Descripción"
+            value={editedDescription}
+            onChangeText={text => setEditedDescription(text)}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Costo"
+            value={editedCost}
+            onChangeText={text => setEditedCost(text)}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Stock"
+            value={editedStock}
+            onChangeText={text => setEditedStock(text)}
+          />
+          <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+            <Text style={styles.saveButtonText}>Guardar</Text>
+          </TouchableOpacity>
+        </View>
+      </Modal>
     </View>
   );
 };

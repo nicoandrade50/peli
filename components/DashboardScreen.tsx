@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, ListRenderItem, Modal, TextInput } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, Modal, TextInput } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../navigation/StackNavigator';
-
 
 type Film = {
   id: string;
@@ -26,7 +25,7 @@ type DashboardScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Da
 
 const DashboardScreen: React.FC = () => {
   const navigation = useNavigation<DashboardScreenNavigationProp>();
-  const [filmList, setFilmList] = useState(initialFilms);
+  const [filmList, setFilmList] = useState<Film[]>(initialFilms);
   const [modalVisible, setModalVisible] = useState(false);
   const [currentFilm, setCurrentFilm] = useState<Film | null>(null);
 
@@ -49,7 +48,7 @@ const DashboardScreen: React.FC = () => {
     }
   };
 
-  const renderItem: ListRenderItem<Film> = ({ item }) => (
+  const renderItem = ({ item }: { item: Film }) => (
     <TouchableOpacity onPress={() => navigation.navigate('Scenes')}>
       <View style={styles.card}>
         <View>
@@ -88,9 +87,10 @@ const DashboardScreen: React.FC = () => {
           transparent={true}
           visible={modalVisible}
           onRequestClose={() => {
-            setModalVisible(!modalVisible);
+            setModalVisible(false);
             setCurrentFilm(null);
-          }}>
+          }}
+        >
           <View style={styles.modalView}>
             <Text style={styles.modalText}>Edit Film</Text>
             <TextInput
