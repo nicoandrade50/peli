@@ -13,9 +13,9 @@ type Scene = {
 };
 
 const initialScenes: Scene[] = [
-  { id: '1', description: 'Scene 1', cost: 'Cost 1', stock: 'Stock 1' },
-  { id: '2', description: 'Scene 2', cost: 'Cost 2', stock: 'Stock 2' },
-  { id: '3', description: 'Scene 3', cost: 'Cost 3', stock: 'Stock 3' },
+  { id: '1', description: 'Rocky vs. Apollo', cost: '$1,000,000', stock: '10' },
+  { id: '2', description: 'Rocky entrenando en el frigorífico', cost: '$500,000', stock: '5' },
+  { id: '3', description: 'Adrian en el hospital', cost: '$200,000', stock: '2' },
 ];
 
 type DashboardScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Dashboard'>;
@@ -108,9 +108,9 @@ const DashboardScene: React.FC = () => {
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <MaterialIcons name="arrow-back" size={24} color="white" />
         </TouchableOpacity>
-        <Text style={styles.header}>FILM 1</Text>
+        <Text style={styles.header}>Rocky Scenes</Text>
       </View>
-      <Text style={styles.subHeader}>SCENES</Text>
+      <Text style={styles.subHeader}>Scenes</Text>
       <FlatList
         data={scenes}
         renderItem={renderItem}
